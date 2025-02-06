@@ -6,9 +6,8 @@
     <title>Dynamic Sky Background</title>
     <style>
         * { margin: 0; padding: 0; overflow: hidden; }
-        body { background: linear-gradient(to bottom, #87CEEB, #ffffff); height: 100vh; width: 100vw; }
-        .cloud { position: absolute; top: 0; left: 100%; width: 200px; opacity: 0.8; }
-        .object { position: absolute; top: 50px; left: 100%; width: 80px; opacity: 1; }
+        body { background: linear-gradient(to bottom, #87CEEB, #ffffff); height: 100vh; width: 100vw; position: relative; }
+        canvas { position: absolute; top: 0; left: 0; }
     </style>
 </head>
 <body>
@@ -18,15 +17,19 @@
         const ctx = canvas.getContext("2d");
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+
+        const cloudImage = new Image();
+        cloudImage.src = "https://i.imgur.com/N1n24qA.png"; // Example cloud image
         
-        const clouds = [];
-        const objects = [];
         const objectImages = [
             "🚀", "🛸", "🦅", "🐉", "🛩️", "🦄", "🎈", "🌠", "🦜", "🦇"
         ];
         
+        const clouds = [];
+        const objects = [];
+        
         function createCloud() {
-            return { x: canvas.width, y: Math.random() * canvas.height / 2, speed: 1 + Math.random() };
+            return { x: canvas.width, y: Math.random() * canvas.height / 2, speed: 1 + Math.random(), opacity: Math.random() * 0.7 + 0.3 };
         }
         
         function createObject() {
@@ -40,19 +43,19 @@
             ctx.font = "50px Arial";
             
             clouds.forEach(cloud => {
-                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-                ctx.beginPath();
-                ctx.arc(cloud.x, cloud.y, 50, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.globalAlpha = cloud.opacity;
+                ctx.drawImage(cloudImage, cloud.x, cloud.y, 120, 70);
                 cloud.x -= cloud.speed;
             });
+            ctx.globalAlpha = 1;
             
             objects.forEach(obj => {
                 ctx.fillText(obj.emoji, obj.x, obj.y);
                 obj.x -= obj.speed;
+                obj.y += Math.sin(Date.now() / 500) * 0.5; // Slight wave motion
             });
             
-            clouds.forEach((cloud, index) => { if (cloud.x < -50) clouds.splice(index, 1); });
+            clouds.forEach((cloud, index) => { if (cloud.x < -120) clouds.splice(index, 1); });
             objects.forEach((obj, index) => { if (obj.x < -50) objects.splice(index, 1); });
             
             requestAnimationFrame(draw);
